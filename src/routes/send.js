@@ -6,6 +6,11 @@ const { sendBatch, getShortErrorMessage } = require("../emailSender");
 const router = express.Router();
 router.post("/", async (req, res) => {
     try {
+        console.log(
+            "Received request body:",
+            JSON.stringify(req.body, null, 2),
+        ); // Debug log
+
         const masterKey = process.env.MASTER_API_KEY;
         if (masterKey && req.body.apiKey !== masterKey) {
             return res.status(401).json({ error: "Invalid API key" });
