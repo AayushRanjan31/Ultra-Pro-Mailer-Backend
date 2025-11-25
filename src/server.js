@@ -26,11 +26,4 @@ app.use("/send", sendRoute);
 
 app.get("/", (req, res) => res.send("Bulk Mailer Backend is running"));
 
-const PORT = process.env.PORT || 8000;
-if (require.main === module) {
-    app.listen(PORT, () =>
-        console.log(`Bulk-mailer backend listening on ${PORT}`),
-    );
-} else {
-    module.exports = app;
-}
+module.exports = app;
