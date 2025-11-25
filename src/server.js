@@ -6,7 +6,7 @@ const sendRoute = require("./routes/send");
 const app = express();
 
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:3000";
-app.use(cors({ origin: FRONTEND_ORIGIN, credentials: true }));
+app.use(cors({ origin: FRONTEND_ORIGIN }));
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
