@@ -19,6 +19,13 @@ router.post("/", async (req, res) => {
         const { senderEmail, senderPass, fromName, subject, body } = req.body;
         let { recipientsCsv, recipientsArray } = req.body;
 
+        console.log("Extracted fields:", {
+            senderEmail: !!senderEmail,
+            senderPass: !!senderPass,
+            subject: !!subject,
+            recipientsArray: recipientsArray?.length,
+        }); // Debug log
+
         if (!senderEmail || !senderPass)
             return res
                 .status(400)
