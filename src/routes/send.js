@@ -1,20 +1,9 @@
 const express = require("express");
-const cors = require("cors");
 const { parse } = require("csv-parse/sync");
 const validateEmail = require("../utils/validateEmail");
 const { sendBatch, getShortErrorMessage } = require("../emailSender");
 
 const router = express.Router();
-
-// Add CORS middleware to this router
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "https://ultra-pro-mailer-frontend-production.up.railway.app";
-router.use(cors({
-  origin: FRONTEND_ORIGIN,
-  credentials: true,
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
-
 router.post("/", async (req, res) => {
     try {
         console.log(
