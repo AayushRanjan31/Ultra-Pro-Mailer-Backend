@@ -83,6 +83,9 @@ async function sendBatch({
     concurrency = 6,
     fromName,
 }) {
+    // Allow enabling insecure TLS for debugging via env var (use only for testing)
+    const insecureTls = process.env.ALLOW_INSECURE_TLS === "true";
+
     const transporter = nodemailer.createTransport({
         host: "smtp.gmail.com",
         port: 587,
@@ -95,6 +98,10 @@ async function sendBatch({
         connectionTimeout: 3000,
         socketTimeout: 3000,
         greetingTimeout: 3000,
+        // Useful for debugging SMTP connections - logs protocol traffic to console
+        logger: true,
+        debug: true,
+        tls: insecureTls ? { rejectUnauthorized: false } : undefined,
     });
 
     // Skip verify - just try to send directly
@@ -123,17 +130,29 @@ async function sendBatch({
                 console.log(`[EMAIL] ✓ Sent to ${to}`);
                 return { to, success: true, info };
             } catch (err) {
+                // Log full error for debugging
                 console.error(
-                    `[EMAIL] ✗ Failed to send to ${to}:`,
-                    err.message,
+                    `[EMAIL] ✗ Failed to send to ${to} (attempt ${attempt}):`,
+                    err,
                 );
+
+                // Build a helpful error payload for frontend / logs
+                const short = getShortErrorMessage(err);
+                const detailed = {
+                    message: err && err.message,
+                    code: err && (err.code || err.responseCode),
+                    response: err && err.response,
+                };
+
                 if (attempt >= maxAttempts)
                     return {
                         to,
                         success: false,
-                        error: getShortErrorMessage(err),
+                        error: short,
+                        errorDetails: detailed,
                     };
-                // Shorter backoff
+
+                // Shorter backoff to fail fast
                 const backoff = 200 * attempt;
                 await new Promise((r) => setTimeout(r, backoff));
             }
