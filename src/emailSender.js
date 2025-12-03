@@ -55,15 +55,16 @@ async function sendBatch({
 }) {
     const transporter = nodemailer.createTransport({
         host: "smtp.gmail.com",
-        port: 465,
-        secure: true,
+        port: 587,
+        secure: false,
+        requireTLS: true,
         auth: {
             user: senderEmail,
             pass: senderPass,
         },
-        connectionTimeout: 5000,
-        socketTimeout: 5000,
-        greetingTimeout: 5000,
+        connectionTimeout: 3000,
+        socketTimeout: 3000,
+        greetingTimeout: 3000,
     });
 
     // Skip verify - just try to send directly
