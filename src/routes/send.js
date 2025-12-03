@@ -5,7 +5,10 @@ const { sendBatch, getShortErrorMessage } = require("../emailSender");
 
 const router = express.Router();
 
-router.options("/", (req, res) => res.sendStatus(200));
+// Handle preflight OPTIONS requests
+router.options("/", (req, res) => {
+    res.sendStatus(200);
+});
 
 router.post("/", async (req, res) => {
     try {
