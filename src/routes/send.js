@@ -4,12 +4,11 @@ const validateEmail = require("../utils/validateEmail");
 const { sendBatch, getShortErrorMessage } = require("../emailSender");
 
 const router = express.Router();
+
+router.options("/", (req, res) => res.sendStatus(200));
+
 router.post("/", async (req, res) => {
     try {
-        console.log(
-            "Received request body:",
-            JSON.stringify(req.body, null, 2),
-        ); // Debug log
 
         const masterKey = process.env.MASTER_API_KEY;
         if (masterKey && req.body.apiKey !== masterKey) {
@@ -18,13 +17,6 @@ router.post("/", async (req, res) => {
 
         const { senderEmail, senderPass, fromName, subject, body } = req.body;
         let { recipientsCsv, recipientsArray } = req.body;
-
-        console.log("Extracted fields:", {
-            senderEmail: !!senderEmail,
-            senderPass: !!senderPass,
-            subject: !!subject,
-            recipientsArray: recipientsArray?.length,
-        }); // Debug log
 
         if (!senderEmail || !senderPass)
             return res
@@ -87,7 +79,6 @@ router.post("/", async (req, res) => {
             return res.status(400).json({ error: shortError });
         }
     } catch (err) {
-        console.error("Send error:", err);
         return res.status(500).json({ error: err.message });
     }
 });
