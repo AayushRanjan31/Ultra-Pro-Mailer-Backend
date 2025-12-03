@@ -2,46 +2,76 @@ const nodemailer = require("nodemailer");
 const pLimit = require("p-limit");
 
 function getShortErrorMessage(error) {
-    if (error.code === 535 || error.responseCode === 535) {
-        return "Username and Password not accepted";
-    }
-    if (error.code === 550 || error.responseCode === 550) {
-        return "Invalid recipient";
-    }
-    if (error.code === 421 || error.responseCode === 421) {
-        return "Rate limit exceeded";
-    }
-    if (error.code === 554 || error.responseCode === 554) {
-        return "Message rejected";
-    }
+    const message = (
+        error.message ||
+        error.toString() ||
+        error.response ||
+        ""
+    ).toLowerCase();
+    const code = error.code || error.responseCode;
 
-    const message = error.message || error.toString() || error.response || "";
-
+    // Authentication errors
     if (
+        code === 535 ||
         message.includes("535") ||
-        message.includes("BadCredentials") ||
-        message.includes("Username and Password not accepted")
+        message.includes("badcredentials") ||
+        message.includes("invalid credentials")
     ) {
-        return "Username and Password not accepted";
-    }
-    if (
-        message.includes("550") ||
-        message.includes("User unknown") ||
-        message.includes("Invalid recipient")
-    ) {
-        return "Invalid recipient";
-    }
-    if (message.includes("421") || message.includes("Too many")) {
-        return "Rate limit exceeded";
-    }
-    if (message.includes("554") || message.includes("Message rejected")) {
-        return "Message rejected";
-    }
-    if (message.includes("timeout") || message.includes("ETIMEDOUT")) {
-        return "Connection timeout";
+        return "Invalid email or app password - please check your credentials";
     }
 
-    return "Sending failed";
+    // Invalid recipient
+    if (
+        code === 550 ||
+        message.includes("550") ||
+        message.includes("user unknown")
+    ) {
+        return "Invalid recipient email address";
+    }
+
+    // Rate limiting
+    if (
+        code === 421 ||
+        message.includes("421") ||
+        message.includes("too many")
+    ) {
+        return "Rate limit exceeded - Gmail is throttling requests";
+    }
+
+    // Message rejected
+    if (
+        code === 554 ||
+        message.includes("554") ||
+        message.includes("message rejected")
+    ) {
+        return "Message was rejected by Gmail";
+    }
+
+    // Connection/timeout errors
+    if (
+        message.includes("timeout") ||
+        message.includes("etimedout") ||
+        message.includes("econnrefused")
+    ) {
+        return "Connection timeout - unable to reach Gmail SMTP server";
+    }
+
+    // TLS errors
+    if (
+        message.includes("tls") ||
+        message.includes("ssl") ||
+        message.includes("certificate")
+    ) {
+        return "TLS/SSL connection error - check Gmail security settings";
+    }
+
+    // Network errors
+    if (message.includes("enotfound") || message.includes("enetunreach")) {
+        return "Network error - unable to reach Gmail";
+    }
+
+    // Generic fallback with actual error
+    return error.message || "Email sending failed";
 }
 
 async function sendBatch({
