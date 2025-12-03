@@ -6,27 +6,30 @@ const app = express();
 
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "*";
 
-// More robust CORS handling: allow explicit origins (comma-separated) or allow all when
-// FRONTEND_ORIGIN is not set. This also handles preflight requests and common headers.
+// Robust CORS configuration for production
 const corsOptions = {
     origin: (origin, callback) => {
-        // allow non-browser requests like curl/postman (no origin)
+        // Allow non-browser requests (no origin)
         if (!origin) return callback(null, true);
 
+        // Allow all if FRONTEND_ORIGIN is "*"
         if (!FRONTEND_ORIGIN || FRONTEND_ORIGIN === "*")
             return callback(null, true);
 
+        // Check if origin is in allowed list (comma-separated)
         const allowed = FRONTEND_ORIGIN.split(",").map((s) => s.trim());
         if (allowed.includes(origin)) return callback(null, true);
+
+        // Reject disallowed origins
         return callback(new Error("Not allowed by CORS"));
     },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
     optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
-// Note: global `app.use(cors(corsOptions))` above handles preflight requests for supported routes.
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
@@ -38,4 +41,3 @@ const HOST = "0.0.0.0";
 app.listen(PORT, HOST, () =>
     console.log(`Bulk-mailer backend listening on ${HOST}:${PORT}`),
 );
-
