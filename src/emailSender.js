@@ -61,8 +61,17 @@ async function sendBatch({
             user: senderEmail,
             pass: senderPass,
         },
+        connectionTimeout: 5000,
+        socketTimeout: 5000,
+        greetingTimeout: 5000,
     });
-    await transporter.verify();
+
+    // Skip verify - just try to send directly
+    console.log(
+        "[EMAIL] Starting batch send for",
+        recipients.length,
+        "recipients",
+    );
 
     const limit = pLimit(concurrency);
 
@@ -74,21 +83,27 @@ async function sendBatch({
             html: body,
         };
 
-        const maxAttempts = 3;
+        const maxAttempts = 2;
         let attempt = 0;
         while (attempt < maxAttempts) {
             try {
                 attempt++;
                 const info = await transporter.sendMail(mailOptions);
+                console.log(`[EMAIL] ✓ Sent to ${to}`);
                 return { to, success: true, info };
             } catch (err) {
+                console.error(
+                    `[EMAIL] ✗ Failed to send to ${to}:`,
+                    err.message,
+                );
                 if (attempt >= maxAttempts)
                     return {
                         to,
                         success: false,
                         error: getShortErrorMessage(err),
                     };
-                const backoff = 500 * Math.pow(2, attempt);
+                // Shorter backoff
+                const backoff = 200 * attempt;
                 await new Promise((r) => setTimeout(r, backoff));
             }
         }
