@@ -64,6 +64,7 @@ async function sendBatch({
             user: senderEmail,
             pass: senderPass,
         },
+        family: 4,
         // Timeouts to fail faster on Railway if network is blocked
         connectionTimeout: 10000, // 10 seconds
         greetingTimeout: 5000,    // 5 seconds
