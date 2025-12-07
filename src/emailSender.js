@@ -49,18 +49,28 @@ async function sendBatch({
     senderPass,
     subject,
     body,
+    smtpHost,
+    smtpPort,
+    smtpSecure, // boolean: true for 465, false for other ports
     recipients,
     concurrency = 6,
     fromName,
 }) {
     const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        secure: true,
+        host: smtpHost || "smtp.gmail.com",
+        port: smtpPort || 465,
+        secure: smtpSecure !== undefined ? smtpSecure : true,
         auth: {
             user: senderEmail,
             pass: senderPass,
         },
+        // Timeouts to fail faster on Railway if network is blocked
+        connectionTimeout: 10000, // 10 seconds
+        greetingTimeout: 5000,    // 5 seconds
+        socketTimeout: 10000,     // 10 seconds
+        // Debug logging
+        debug: true,
+        logger: true,
     });
     await transporter.verify();
 
