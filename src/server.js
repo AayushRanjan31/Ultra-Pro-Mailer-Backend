@@ -13,15 +13,8 @@ const simpleCors = (req, res, next) => {
     const origin = req.get("origin");
     console.log("[CORS] Incoming origin:", origin);
 
-    // Only allow requests from the configured frontend origin
-    if (origin === FRONTEND_ORIGIN) {
-        res.header("Access-Control-Allow-Origin", FRONTEND_ORIGIN);
-    }
-    // Optionally, allow requests with no origin (like curl or direct browser visit)
-    else if (!origin) {
-        res.header("Access-Control-Allow-Origin", "*");
-    }
-
+    // Always allow only the configured frontend origin
+    res.header("Access-Control-Allow-Origin", FRONTEND_ORIGIN);
     res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
     res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
     res.header("Access-Control-Allow-Credentials", "true");
