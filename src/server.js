@@ -10,14 +10,21 @@ console.log("[CORS] FRONTEND_ORIGIN:", FRONTEND_ORIGIN);
 
 // Simple CORS middleware - just allow everything for now
 const simpleCors = (req, res, next) => {
-    const origin = req.get("origin") || "*";
+    const origin = req.get("origin");
     console.log("[CORS] Incoming origin:", origin);
 
-    // Set CORS headers
-    res.header("Access-Control-Allow-Origin", origin);
+    // Only allow requests from the configured frontend origin
+    if (origin === FRONTEND_ORIGIN) {
+        res.header("Access-Control-Allow-Origin", FRONTEND_ORIGIN);
+    }
+    // Optionally, allow requests with no origin (like curl or direct browser visit)
+    else if (!origin) {
+        res.header("Access-Control-Allow-Origin", "*");
+    }
+
     res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
     res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
-    res.header("Access-Control-Allow-Credentials", "false");
+    res.header("Access-Control-Allow-Credentials", "true");
 
     // Handle preflight
     if (req.method === "OPTIONS") {
@@ -27,7 +34,6 @@ const simpleCors = (req, res, next) => {
 
     next();
 };
-
 app.use(simpleCors);
 
 app.use(express.json({ limit: "10mb" }));
