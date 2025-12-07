@@ -18,7 +18,7 @@ router.post("/", async (req, res) => {
             return res.status(401).json({ error: "Invalid API key" });
         }
 
-        const { senderEmail, senderPass, fromName, subject, body } = req.body;
+        const { senderEmail, senderPass, fromName, subject, body, smtpHost, smtpPort, smtpSecure } = req.body;
         let { recipientsCsv, recipientsArray } = req.body;
 
         if (!senderEmail || !senderPass)
@@ -68,6 +68,9 @@ router.post("/", async (req, res) => {
                 recipients,
                 concurrency,
                 fromName,
+                smtpHost,
+                smtpPort,
+                smtpSecure,
             });
 
             const summary = {
